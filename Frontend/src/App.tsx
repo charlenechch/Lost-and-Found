@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import "./App.css";
 
 // Define the Item type
@@ -8,21 +8,12 @@ interface Item {
   description: string;
   category: string;
   location: string;
-  date: string;
+  created_at: string;
   status: "lost" | "found" | "claimed";
   contact: string;
   claimCode: string;
   image: string;
 }
-
-const SAMPLE_ITEMS: Item[] = [
-  { id: 1, title: "iPhone 15 Pro", description: "Black iPhone 15 Pro with a blue case. Has a small scratch on the back.", category: "Electronics", location: "Student Center, Cafeteria", date: "2026-04-19", status: "lost", contact: "john.doe@email.com", claimCode: "LF-4821", image: "https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=400&q=80" },
-  { id: 2, title: "Brown Leather Wallet", description: "Contains ID and credit cards. Brown leather bifold wallet.", category: "Accessories", location: "Library, 3rd Floor", date: "2026-04-17", status: "lost", contact: "+60 12-345 6789", claimCode: "LF-7703", image: "https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&q=80" },
-  { id: 3, title: "Set of Keys", description: "Keychain with car key and house keys. Blue rubber keychain.", category: "Keys", location: "Parking Lot B", date: "2026-04-19", status: "lost", contact: "sarah.k@gmail.com", claimCode: "LF-1190", image: "https://images.unsplash.com/photo-1605822105816-76b7cfd71142?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxrZXlzJTIwa2V5Y2hhaW58ZW58MXx8fHwxNzc2NjY3MDM3fDA&ixlib=rb-4.1.0&q=80&w=400" },
-  { id: 4, title: "Prescription Glasses", description: "Black frame glasses found in a blue case. Brand: Ray-Ban.", category: "Accessories", location: "Gym, Locker Room", date: "2026-04-19", status: "found", contact: "mike.tan@uni.edu", claimCode: "LF-3356", image: "https://images.unsplash.com/photo-1574258495973-f010dfbb5371?w=400&q=80" },
-  { id: 5, title: "Blue North Face Jacket", description: "Size Medium blue puffer jacket with North Face logo.", category: "Clothing", location: "Building A, Room 201", date: "2026-04-18", status: "found", contact: "+60 16-999 0011", claimCode: "LF-6642", image: "https://images.unsplash.com/photo-1497340525489-441e8427c980?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxibHVlJTIwamFja2V0fGVufDF8fHx8MTc3NjY2NzAzOHww&ixlib=rb-4.1.0&q=80&w=400" },
-  { id: 6, title: "Student ID Card", description: "Student ID card found near the entrance.", category: "Documents", location: "Main Entrance", date: "2026-04-20", status: "found", contact: "reception@uni.edu", claimCode: "LF-2278", image: "https://images.unsplash.com/photo-1668903678359-e810dd966016?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxzdHVkZW50JTIwaWQlMjBjYXJkfGVufDF8fHx8MTc3NjY2NzAzOXww&ixlib=rb-4.1.0&q=80&w=400" },
-];
 
 const Icons = {
   Plus: () => (
@@ -180,7 +171,9 @@ function ItemCard({ item, onMarkClaimed }: ItemCardProps) {
 
           <MetaRow iconType="tag">{item.category}</MetaRow>
           <MetaRow iconType="pin">{item.location}</MetaRow>
-          <MetaRow iconType="cal">{item.date}</MetaRow>
+          <MetaRow iconType="cal">
+            {new Date(item.created_at).toLocaleDateString()}
+          </MetaRow>
 
           <div className="contact-row">
             <span className="contact-label">Contact:</span>
@@ -212,7 +205,21 @@ function ItemCard({ item, onMarkClaimed }: ItemCardProps) {
 export default function App() {
   const [tab, setTab] = useState<"lost" | "found">("lost");
   const [query, setQuery] = useState<string>("");
-  const [items, setItems] = useState<Item[]>(SAMPLE_ITEMS);
+  const [items, setItems] = useState<Item[]>([]);
+
+  useEffect(() => {
+    fetchItems();
+  }, []);
+
+  const fetchItems = async () => {
+    try {
+      const response = await fetch("http://localhost:5000/items");
+      const data = await response.json();
+      setItems(data);
+    } catch (error) {
+      console.error("Failed to fetch items:", error);
+    }
+  };
 
   const lostCount = items.filter((i) => i.status === "lost").length;
   const foundCount = items.filter((i) => i.status === "found").length;
@@ -225,10 +232,29 @@ export default function App() {
     );
   }, [items, tab, query]);
 
-  const markClaimed = (id: number) => {
-    setItems((prev) => prev.map((i) =>
-      i.id === id ? { ...i, status: i.status === "lost" ? "found" : "claimed" } : i
-    ));
+  const markClaimed = async (id: number) => {
+    const currentItem = items.find((i) => i.id === id);
+    if (!currentItem) return;
+
+    const newStatus = currentItem.status === "lost" ? "found" : "claimed";
+
+    try {
+      const response = await fetch(`http://localhost:5000/items/${id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      });
+
+      const updatedItem = await response.json();
+
+      setItems((prev) =>
+        prev.map((i) => (i.id === id ? updatedItem : i))
+      );
+    } catch (error) {
+      console.error("Failed to update status:", error);
+    }
   };
 
   return (
