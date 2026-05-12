@@ -13,7 +13,7 @@ CREATE TABLE items (
   returned_at TIMESTAMPTZ
 );
 
-// Sample data
+--  Sample data
 INSERT INTO items (title, description, category, location, date, status, contact, claimcode, image, created_at) VALUES
 ('iPhone 15 Pro', 'Black iPhone 15 Pro with a blue case. Has a small scratch on the back.', 'Electronics', 'Student Center, Cafeteria', '2026-04-19', 'lost', 'john.doe@email.com', 'LF-4821', 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=400&q=80', NOW()),
 ('Brown Leather Wallet', 'Contains ID and credit cards. Brown leather bifold wallet.', 'Accessories', 'Library, 3rd Floor', '2026-04-17', 'lost', '+60 12-345 6789', 'LF-7703', 'https://images.unsplash.com/photo-1627123424574-724758594e93?w=400&q=80', NOW()),
