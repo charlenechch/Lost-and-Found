@@ -16,6 +16,8 @@ interface Item {
   image: string;
 }
 
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 const Icons = {
   Plus: () => (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
@@ -123,7 +125,7 @@ function ClaimModal({ item, onConfirm, onClose }: ClaimModalProps) {
     setError("");
 
     try {
-      const response = await fetch(`http://localhost:5000/items/${item.id}/verify-claim`, {
+      const response = await fetch(`${API_URL}/items/${item.id}/verify-claim`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -271,7 +273,7 @@ export default function App() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch("http://localhost:5000/items");
+      const response = await fetch(`${API_URL}/items`);
       const data = await response.json();
       setItems(data);
     } catch (error) {

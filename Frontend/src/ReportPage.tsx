@@ -19,6 +19,8 @@ export default function ReportPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   // Handle file selection
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -47,7 +49,7 @@ export default function ReportPage() {
 
     try {
       // Make API call with FormData
-      const response = await axios.post("http://localhost:5000/items", formData, {
+      const response = await axios.post(`${API_URL}/items`, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
