@@ -79,9 +79,11 @@ app.get("/items", async (req, res) => {
 
 // POST - Create new item report 
 app.post("/items", upload.single("photo"), async (req, res) => {
+  console.log("Auto deploy test");
   try {
     console.log("Request body:", req.body);
     console.log("Uploaded file:", req.file);
+    
 
     const { 
       status, 
