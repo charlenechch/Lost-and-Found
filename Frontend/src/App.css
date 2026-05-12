@@ -84,6 +84,7 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
 }
 .tab-btn.active-lost  { background: #e53e3e; color: #fff; }
 .tab-btn.active-found { background: #276749; color: #fff; }
+.tab-btn.active_returned { background: #63a7b2; color: #fff; }
 
 .tab-badge {
   display: inline-flex;
@@ -96,9 +97,11 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   font-weight: 700;
 }
 .tab-btn.active-lost  .tab-badge,
-.tab-btn.active-found .tab-badge { background: rgba(255,255,255,0.25); color: #fff; }
+.tab-btn.active-found .tab-badge,
+.tab-btn.active-returned .tab-badge { background: rgba(255,255,255,0.25); color: #fff; }
 .tab-btn.tab-lost:not(.active-lost)   .tab-badge { background: #fee2e2; color: #e53e3e; }
 .tab-btn.tab-found:not(.active-found) .tab-badge { background: #d1fae5; color: #276749; }
+.tab-btn.tab-returned:not(.active-returned) .tab-badge { background: #dbeafe; color: #1d4ed8; }
 
 .search-wrapper {
   position: relative;
@@ -167,6 +170,7 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
 }
 .status-badge.lost  { background: #e53e3e; }
 .status-badge.found { background: #2f855a; }
+.status-badge.returned { background: #4682a2; }
 
 .card-body  { padding: 1rem 1.25rem 1.25rem; }
 .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 6px; }
@@ -461,3 +465,22 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   transition: opacity 0.15s;
 }
 .claim-btn-confirm:hover { opacity: 0.88; }
+
+.returned-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  padding: 10px;
+  background: #d5e5ec;
+  color: #4682a2;
+  border-radius: 8px;
+  font-weight: 600;
+  margin-top: 12px;
+}
+
+.tab-returned.active-returned {
+  background: #4682a2;
+  color: white;
+  border-color: #4682a2;
+}

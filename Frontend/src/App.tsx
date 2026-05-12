@@ -10,9 +10,9 @@ interface Item {
   category: string;
   location: string;
   created_at: string;
-  status: "lost" | "found" | "claimed";
+  status: "lost" | "found" | "returned";
   contact: string;
-  claimCode: string;
+  claimcode: string;
   image: string;
 }
 
@@ -72,6 +72,14 @@ const Icons = {
       <line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
+  
+  // Add a Return/Checkmark icon for returned items
+  Returned: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <path d="M20 6L9 17l-5-5"/>
+      <circle cx="12" cy="12" r="10"/>
+    </svg>
+  ),
 };
 
 // MetaRow
@@ -96,53 +104,81 @@ function MetaRow({ iconType, children }: MetaRowProps) {
 // Claim Modal
 interface ClaimModalProps {
   item: Item;
-  onConfirm: () => void;
+  onConfirm: (claimcode: string) => void;
   onClose: () => void;
 }
 
 function ClaimModal({ item, onConfirm, onClose }: ClaimModalProps) {
   const [code, setCode] = useState("");
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const submit = () => {
-    if (code.trim().toUpperCase() === item.claimCode) {
-      onConfirm();
-    } else {
-      setError("Incorrect code.");
+  const submit = async () => {
+    if (!code.trim()) {
+      setError("Please enter a claim code");
+      return;
+    }
+
+    setLoading(true);
+    setError("");
+
+    try {
+      const response = await fetch(`http://localhost:5000/items/${item.id}/verify-claim`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ claimcode: code.trim().toUpperCase() })
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        alert("✅ Claim verified! Item marked as returned.");
+        onConfirm(code.trim().toUpperCase());
+        onClose();
+      } else {
+        setError(data.error || "Incorrect claim code");
+      }
+    } catch (error) {
+      console.error("Error verifying claim:", error);
+      setError("Failed to verify claim. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <div className="modal-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
       <div className="claim-modal">
-
-        <button className="claim-modal-close" onClick={onClose}>
-          ✕
-        </button>
-
+        <button className="claim-modal-close" onClick={onClose}>✕</button>
+        
         <h2 className="claim-title">
-          {item.status === "lost" ? "Mark as Found" : "Mark as Returned"}
+          {item.status === "lost" ? "Claim Lost Item" : "Claim Found Item"}
         </h2>
-
+        
+        <p className="claim-instruction">
+          Enter the claim code to verify this item
+        </p>
+        
         <input
           className="claim-input"
           placeholder="Enter Secret Code"
           value={code}
           onChange={(e) => setCode(e.target.value)}
+          disabled={loading}
         />
-
+        
         {error && <p className="claim-error">{error}</p>}
-
+        
         <div className="claim-footer">
-          <button className="claim-btn-cancel" onClick={onClose}>
+          <button className="claim-btn-cancel" onClick={onClose} disabled={loading}>
             Cancel
           </button>
-
-          <button className="claim-btn-confirm" onClick={submit}>
-            Confirm
+          <button className="claim-btn-confirm" onClick={submit} disabled={loading}>
+            {loading ? "Verifying..." : "Confirm"}
           </button>
         </div>
-
       </div>
     </div>
   );
@@ -151,50 +187,59 @@ function ClaimModal({ item, onConfirm, onClose }: ClaimModalProps) {
 // Item Card
 interface ItemCardProps {
   item: Item;
-  onMarkClaimed: (id: number) => void;
+  onMarkClaimed: (id: number, claimcode: string) => void;
 }
 
 function ItemCard({ item, onMarkClaimed }: ItemCardProps) {
   const [showClaim, setShowClaim] = useState(false);
 
-  const handleConfirm = () => {
-    onMarkClaimed(item.id);
+  const handleConfirm = (claimcode: string) => {
+    onMarkClaimed(item.id, claimcode);
     setShowClaim(false);
   };
 
   return (
     <>
       <div className="card">
-
         <div className="card-img-wrap">
-          <img className="card-img" src={item.image} alt={item.title} />
-
+          <img 
+            className="card-img" 
+            src={item.image || "/placeholder-image.jpg"} 
+            alt={item.title} 
+          />
           <span className={`status-badge ${item.status}`}>
-            {item.status === "lost" ? "Lost" : "Found"}
+            {item.status === "lost" ? "Lost" : 
+             item.status === "found" ? "Found" : "Returned"}
           </span>
         </div>
 
         <div className="card-body">
-
           <h3 className="card-title">{item.title}</h3>
-
           <p className="card-desc">{item.description}</p>
-
+          
           <MetaRow iconType="tag">{item.category}</MetaRow>
           <MetaRow iconType="pin">{item.location}</MetaRow>
-
           <MetaRow iconType="cal">
             {new Date(item.created_at).toLocaleDateString()}
           </MetaRow>
 
-          <button
-            className={`btn-mark-claimed ${item.status}`}
-            onClick={() => setShowClaim(true)}
-          >
-            <Icons.Check />
-            {item.status === "lost" ? "Mark as Found" : "Mark as Returned"}
-          </button>
+          {/* Show different buttons based on status */}
+          {(item.status === "lost" || item.status === "found") && (
+            <button
+              className={`btn-mark-claimed ${item.status}`}
+              onClick={() => setShowClaim(true)}
+            >
+              <Icons.Check />
+              {item.status === "lost" ? "Mark as Found" : "Mark as Returned"}
+            </button>
+          )}
 
+          {item.status === "returned" && (
+            <div className="returned-badge">
+              <Icons.Returned />
+              <span>Returned successfully</span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -211,12 +256,13 @@ function ItemCard({ item, onMarkClaimed }: ItemCardProps) {
 
 // MAIN APP
 export default function App() {
-
   const navigate = useNavigate();
-
-  const [tab, setTab] = useState<"lost" | "found">("lost");
+  
+  // CHANGED: Added "returned" as a tab option
+  const [tab, setTab] = useState<"lost" | "found" | "returned">("lost");
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Item[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetchItems();
@@ -224,138 +270,99 @@ export default function App() {
 
   const fetchItems = async () => {
     try {
+      setLoading(true);
       const response = await fetch("http://localhost:5000/items");
       const data = await response.json();
       setItems(data);
     } catch (error) {
       console.error("Failed to fetch items:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
+  // CHANGED: Added returnedCount
   const lostCount = items.filter((i) => i.status === "lost").length;
   const foundCount = items.filter((i) => i.status === "found").length;
+  const returnedCount = items.filter((i) => i.status === "returned").length;
 
   const visible = useMemo(() => {
     const q = query.toLowerCase();
-
     return items.filter(
       (i) =>
         i.status === tab &&
         (!q ||
           [i.title, i.description, i.location, i.category].some((f) =>
-            f.toLowerCase().includes(q)
+            f?.toLowerCase().includes(q)
           ))
     );
   }, [items, tab, query]);
 
-  const markClaimed = async (id: number) => {
-    const currentItem = items.find((i) => i.id === id);
-
-    if (!currentItem) return;
-
-    const newStatus =
-      currentItem.status === "lost" ? "found" : "claimed";
-
-    try {
-      const response = await fetch(
-        `http://localhost:5000/items/${id}/status`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ status: newStatus }),
-        }
-      );
-
-      const updatedItem = await response.json();
-
-      setItems((prev) =>
-        prev.map((i) => (i.id === id ? updatedItem : i))
-      );
-
-    } catch (error) {
-      console.error("Failed to update status:", error);
-    }
+  const markClaimed = async (id: number, claimcode: string) => {
+    // Refresh the items list after claiming
+    await fetchItems();
   };
 
   return (
     <div className="app">
-
       <header className="header">
-
         <div>
           <h1 className="brand-title">Lost &amp; Found</h1>
-
           <p className="brand-sub">
             Help reunite people with their belongings
           </p>
         </div>
-
-        <button
-          className="btn-report"
-          onClick={() => navigate("/report")}
-        >
+        <button className="btn-report" onClick={() => navigate("/report")}>
           <Icons.Plus />
           Report Item
         </button>
-
       </header>
 
       <main className="main">
-
         <div className="tab-row">
           <div className="tab-switcher">
-
             {[
-              ["lost", lostCount] as const,
-              ["found", foundCount] as const,
-            ].map(([type, count]) => (
-
+              ["lost", lostCount, "Lost Items"],
+              ["found", foundCount, "Found Items"],
+              ["returned", returnedCount, "Returned Items"],
+            ].map(([type, count, label]) => (
               <button
                 key={type}
                 className={`tab-btn tab-${type} ${
                   tab === type ? `active-${type}` : ""
                 }`}
-                onClick={() => setTab(type)}
+                onClick={() => setTab(type as "lost" | "found" | "returned")}
               >
                 <Icons.List />
-
-                {type === "lost" ? "Lost Items" : "Found Items"}
-
+                {label}
                 <span className="tab-badge">{count}</span>
               </button>
-
             ))}
-
           </div>
         </div>
 
         <div className="search-wrapper">
-
           <span className="search-icon">
             <Icons.Search />
           </span>
-
           <input
             className="search-input"
             placeholder="Search items..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
-
         </div>
 
         <div className="items-grid">
-
-          {visible.length === 0 ? (
-
-            <div className="no-results">
-              <p>No items found</p>
+          {loading ? (
+            <div className="loading">
+              <p>Loading items...</p>
             </div>
-
+          ) : visible.length === 0 ? (
+            <div className="no-results">
+              <p>No {tab} items found</p>
+            </div>
           ) : (
-
             visible.map((item) => (
               <ItemCard
                 key={item.id}
@@ -363,11 +370,8 @@ export default function App() {
                 onMarkClaimed={markClaimed}
               />
             ))
-
           )}
-
         </div>
-
       </main>
     </div>
   );

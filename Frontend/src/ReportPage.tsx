@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import "./ReportPage.css";
 
 export default function ReportPage() {
@@ -14,24 +15,54 @@ export default function ReportPage() {
   const [date, setDate] = useState("");
   const [location, setLocation] = useState("");
   const [contact, setContact] = useState("");
+  const [photo, setPhoto] = useState<File | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setPhoto(e.target.files[0]);
+    }
+  };
+
+  // Use standard event type without React's deprecated types
+  const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    const formData = {
-      status,
-      itemName,
-      description,
-      category,
-      date,
-      location,
-      contact,
-    };
+    // CREATE FORMDATA
+    const formData = new FormData();
+    formData.append("status", status);
+    formData.append("itemName", itemName);
+    formData.append("description", description);
+    formData.append("category", category);
+    formData.append("date", date);
+    formData.append("location", location);
+    formData.append("contact", contact);
+    if (photo) {
+      formData.append("photo", photo);
+    }
 
-    console.log(formData);
+    try {
+      // Make API call with FormData
+      const response = await axios.post("http://localhost:5000/items", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
-    alert("Report submitted successfully!");
-    navigate("/");
+      console.log("Success:", response.data);
+      alert("Report submitted successfully!");
+      navigate("/");
+    } catch (err: any) {
+      console.error("Error:", err);
+      setError(err.response?.data?.error || "Failed to submit report. Please try again.");
+      alert(error || "Failed to submit report");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -49,6 +80,9 @@ export default function ReportPage() {
 
           {/* TITLE */}
           <h1 className="report-title">Report an Item</h1>
+
+          {/* ERROR MESSAGE */}
+          {error && <div className="error-message" style={{color: 'red', marginBottom: '10px'}}>{error}</div>}
 
           <form onSubmit={handleSubmit}>
 
@@ -132,6 +166,7 @@ export default function ReportPage() {
                   <option>Keys</option>
                   <option>Documents</option>
                   <option>Accessories</option>
+                  <option>Other</option>
                 </select>
               </div>
 
@@ -179,7 +214,12 @@ export default function ReportPage() {
               <label className="form-label">Photo (Optional)</label>
 
               <label className="upload-box">
-                <input type="file" hidden />
+                <input 
+                  type="file" 
+                  hidden 
+                  onChange={handleFileChange}
+                  accept="image/png,image/jpeg,image/jpg"
+                />
 
                 <div className="upload-icon">
                     <svg
@@ -199,14 +239,14 @@ export default function ReportPage() {
                     </svg>
                 </div>
 
-                <h3>Click to upload photo</h3>
+                <h3>{photo ? photo.name : "Click to upload photo"}</h3>
                 <p>PNG, JPG up to 10MB</p>
               </label>
             </div>
 
             {/* SUBMIT BUTTON */}
-            <button type="submit" className="submit-btn">
-                Submit Report
+            <button type="submit" className="submit-btn" disabled={loading}>
+              {loading ? "Submitting..." : "Submit Report"}
             </button>
 
           </form>
