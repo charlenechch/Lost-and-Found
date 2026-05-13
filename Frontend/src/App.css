@@ -33,19 +33,32 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   align-items: center;
   justify-content: space-between;
   padding: 0 2rem;
-  height: 90px;
-  box-shadow: 0 2px 0 #e53e3e;
+  height: 95px;
+  box-shadow: 0 5px 0 #e53e3e;
   position: sticky;
-  top: 0;
+  top: 10;
   z-index: 100;
 }
-.brand-title { color: #fff; font-size: 2.5rem; font-weight: 700; }
-.brand-sub   { color: #fff; font-size: 0.80rem; margin-top: 2px; }
+
+.brand-title { 
+  color: #fff; 
+  font-size: 2rem; 
+  font-weight: 700; 
+  margin-left: 50px;
+}
+
+.brand-sub   { 
+  color: #fff; 
+  font-size: 0.80rem; 
+  margin-top: 2px; 
+  margin-left: 50px;
+}
+
 .btn-report {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: #e53e3e;
+  background: #df2b2b;
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -55,35 +68,45 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   cursor: pointer;
   transition: background 0.2s;
 }
-.btn-report:hover { background: #c53030; }
+
+.btn-report:hover { 
+  background: #c53030; 
+}
 
 .main { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; }
 
-.tab-row     { display: flex; justify-content: center; margin-bottom: 2rem; }
+.tab-row     { 
+  display: flex; 
+  justify-content: center; 
+  margin-bottom: 2rem; 
+}
+
 .tab-switcher {
   display: flex;
   background: #fff;
   border-radius: 16px;
-  padding: 6px;
+  padding: 4px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.08);
   gap: 4px;
 }
+
 .tab-btn {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 15px 25px;
+  padding: 10px 18px;
   border: none;
   border-radius: 12px;
-  font-size: 1rem;
-  font-weight: 1000;
+  font-size: 0.9rem;
+  font-weight: 900;
   cursor: pointer;
   background: transparent;
   color: #444;
   transition: background 0.2s, color 0.2s;
 }
-.tab-btn.active-lost  { background: #e53e3e; color: #fff; }
-.tab-btn.active-found { background: #276749; color: #fff; }
+
+.tab-btn.active-lost  { background: #e03333; color: #fff; }
+.tab-btn.active-found { background: #3a996d; color: #fff; }
 .tab-btn.active_returned { background: #63a7b2; color: #fff; }
 
 .tab-badge {
@@ -108,9 +131,10 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   max-width: 700px;
   margin: 0 auto 2.5rem;
 }
+
 .search-input {
   width: 100%;
-  padding: 17px 50px 17px 45px;
+  padding: 15px 50px 17px 45px;
   border: 1.5px solid #ddd;
   border-radius: 16px;
   font-size: 0.95rem;
@@ -118,6 +142,7 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   outline: none;
   transition: border-color 0.2s;
 }
+
 .search-input:focus { border-color: #aaa; }
 .search-icon {
   position: absolute;
@@ -131,9 +156,11 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
 
 .items-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(280px, 0.8fr));
   gap: 1.5rem;
+  align-items: start;
 }
+
 .no-results {
   grid-column: 1 / -1;
   text-align: center;
@@ -154,7 +181,7 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   transform: translateY(-3px);
   box-shadow: 0 6px 20px rgba(0,0,0,0.12);
 }
-.card-img-wrap { position: relative; height: 220px; overflow: hidden; background: #eee; }
+.card-img-wrap { position: relative; height: 170px; overflow: hidden; background: #eee; }
 .card-img      { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
 .card:hover .card-img { transform: scale(1.04); }
 
@@ -172,9 +199,15 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
 .status-badge.found { background: #2f855a; }
 .status-badge.returned { background: #4682a2; }
 
-.card-body  { padding: 1rem 1.25rem 1.25rem; }
+.card-body { 
+  padding: 1rem 1.25rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+}
+
 .card-title { font-size: 1.25rem; font-weight: 700; margin-bottom: 6px; }
-.card-desc  {
+
+.card-desc {
   font-size: 0.85rem;
   color: #676565;
   line-height: 1.5;
@@ -184,6 +217,7 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   -webkit-box-orient: vertical;
   overflow: hidden;
   font-weight: 700;
+  min-height: 2.5rem;
 }
 
 .meta-row {
@@ -420,6 +454,7 @@ h1, h2, h3, p { margin: 0; font-weight: inherit; }
   color: #333;
   background: #fafafa;
   transition: border-color 0.2s;
+  margin-top: 10px;
 }
 .claim-input:focus { border-color: #e53e3e; background: #fff; }
 
