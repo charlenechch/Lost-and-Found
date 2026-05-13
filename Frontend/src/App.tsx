@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from "react";
 import "./App.css";
-import { useNavigate } from "react-router-dom";
 import ReportPage from "./ReportPage";
 
 // Define the Item type
@@ -260,8 +259,6 @@ function ItemCard({ item, onMarkClaimed }: ItemCardProps) {
 
 // MAIN APP
 export default function App() {
-  const navigate = useNavigate();
-
   const [tab, setTab] = useState<"lost" | "found" | "returned">("lost");
   const [query, setQuery] = useState("");
   const [items, setItems] = useState<Item[]>([]);
@@ -301,7 +298,7 @@ export default function App() {
     );
   }, [items, tab, query]);
 
-  const markClaimed = async (id: number, claimcode: string) => {
+  const markClaimed = async (_id: number, _claimcode: string) => {
     await fetchItems();
   };
 
