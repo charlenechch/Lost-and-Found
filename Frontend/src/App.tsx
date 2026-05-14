@@ -342,7 +342,7 @@ export default function App() {
           <span className="search-icon"><Icons.Search /></span>
           <input
             className="search-input"
-            placeholder="Search items..."
+            placeholder="Search items by name, description or location..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
