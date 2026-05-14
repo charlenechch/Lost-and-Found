@@ -79,12 +79,8 @@ jobs:
           CI: false
 
       - name: Deploy to Vercel
-        # Only deploy on push to main, not on PRs
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        uses: amondnet/vercel-action@v25
-        with:
-          vercel-token: ${{ secrets.VERCEL_TOKEN }}
-          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
-          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
-          working-directory: ./Frontend
-          vercel-args: '--prod'
+        run: npx vercel@latest --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
