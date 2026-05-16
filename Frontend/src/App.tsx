@@ -125,7 +125,7 @@ function ClaimModal({ item, onConfirm, onClose }: ClaimModalProps) {
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}/items/${item.id}/verify-claim`, {
+      const response = await fetch(`${API_URL}items/${item.id}/verify-claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ claimcode: code.trim().toUpperCase() })
@@ -272,7 +272,7 @@ export default function App() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}/items`);
+      const response = await fetch(`${API_URL}items`);
       const data = await response.json();
       setItems(data);
     } catch (error) {
