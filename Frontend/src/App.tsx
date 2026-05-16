@@ -159,17 +159,24 @@ function ClaimModal({ item, onConfirm, onClose }: ClaimModalProps) {
           <div style={{ padding: '1rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             <div style={{ fontSize: '3rem' }}>✅</div>
             <h2 className="claim-title">Item Returned!</h2>
-            <p className="claim-instruction">The item has been marked as returned successfully.</p>
+            <p className="claim-subtitle">The item has been marked as returned successfully.</p>
           </div>
         ) : (
           <>
+            <div className="claim-icon-wrap">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
             <h2 className="claim-title">
-              {item.status === "lost" ? "Claim Lost Item" : "Claim Found Item"}
+              {item.status === "lost" ? "Mark as Found" : "Mark as Returned"}
             </h2>
-            <p className="claim-instruction">Enter the claim code to verify this item</p>
+            <p className="claim-subtitle">Enter your secret code to confirm this action</p>
+            <label className="claim-label">Secret Code</label>
             <input
               className="claim-input"
-              placeholder="Enter Secret Code"
+              placeholder="Enter your code (e.g., LF-4821)"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               disabled={loading}
@@ -226,7 +233,17 @@ function ItemCard({ item, onMarkClaimed }: ItemCardProps) {
           <MetaRow iconType="cal">
             {new Date(item.created_at).toLocaleDateString()}
           </MetaRow>
-
+          {item.contact && (
+            <div className="contact-row">
+              <span className="contact-label">Contact:</span>
+              <a
+                className="contact-value"
+                href={item.contact.includes("@") ? `mailto:${item.contact}` : `tel:${item.contact}`}
+              >
+                {item.contact}
+              </a>
+            </div>
+          )}
           {(item.status === "lost" || item.status === "found") && (
             <button
               className={`btn-mark-claimed ${item.status}`}
