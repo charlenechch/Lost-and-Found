@@ -274,9 +274,16 @@ export default function App() {
       setLoading(true);
       const response = await fetch(`${API_URL}items`);
       const data = await response.json();
-      setItems(data);
+      
+      if (Array.isArray(data)) {
+        setItems(data);
+      } else {
+        console.error("Expected array but got:", data);
+        setItems([]);
+      }
     } catch (error) {
       console.error("Failed to fetch items:", error);
+      setItems([]);
     } finally {
       setLoading(false);
     }
