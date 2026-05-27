@@ -20,6 +20,7 @@
     "@babel/core": "^7.29.0",
     "@eslint/js": "^10.0.1",
     "@rolldown/plugin-babel": "^0.2.3",
+    "@testing-library/jest-dom": "^6.9.1",
     "@types/babel__core": "^7.20.5",
     "@types/jest": "^30.0.0",
     "@types/node": "^24.12.4",
