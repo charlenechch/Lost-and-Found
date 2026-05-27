@@ -20,7 +20,7 @@ export default function ReportPage({ onClose }: { onClose?: () => void }) {
   const [error, setError] = useState("");
   const [submittedCode, setSubmittedCode] = useState<string | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const API_URL = "http://localhost:5000";
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
