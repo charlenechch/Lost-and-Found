@@ -78,4 +78,4 @@ jobs:
 
       - name: Deploy to Vercel
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: npx vercel@latest --token=${{ secrets.VERCEL_TOKEN }} --org-id=${{ secrets.VERCEL_ORG_ID }} --project-id=${{ secrets.VERCEL_PROJECT_ID }} --prod --yes
+        run: npx vercel@latest --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} --project-id=${{ secrets.VERCEL_PROJECT_ID }} --prod --yes
