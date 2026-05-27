@@ -72,10 +72,21 @@ jobs:
         run: npm ci
 
       - name: Build check
-        run: npm run build || true 
+        run: npm run build || true
         env:
           CI: false
 
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Pull Vercel environment
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build for Vercel
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
       - name: Deploy to Vercel
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-        run: npx vercel@latest --token=${{ secrets.VERCEL_TOKEN }} --scope=${{ secrets.VERCEL_ORG_ID }} --project-id=${{ secrets.VERCEL_PROJECT_ID }} --prod --yes
+        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
