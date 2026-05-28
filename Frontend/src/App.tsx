@@ -289,7 +289,7 @@ export default function App() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}items`);
+      const response = await fetch(`${API_URL}/items`);
       const data = await response.json();
       
       if (Array.isArray(data)) {
