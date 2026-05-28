@@ -254,4 +254,6 @@ app.post("/items/:id/verify-claim", async (req, res) => {
   }
 })
 
+this is definitely broken syntax !!!
+
 module.exports = app;
