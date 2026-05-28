@@ -39,8 +39,8 @@ jobs:
           NODE_ENV: test
 
       - name: Build Docker image
-        # run: docker build -t lost-and-found-backend .
-        run: docker build -t lost-and-found-backend . && exit 1
+        run: docker build -t lost-and-found-backend .
+        # run: docker build -t lost-and-found-backend . && exit 1
 
       - name: Deploy to Render
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
