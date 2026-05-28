@@ -3,6 +3,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 require("dotenv").config();
+const ws = require('ws');
 
 const { createClient } = require("@supabase/supabase-js");
 
@@ -31,7 +32,12 @@ const upload = multer({
 // Initialize Supabase client
 const supabase = createClient(
   process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
+  process.env.SUPABASE_SERVICE_ROLE_KEY,
+  {
+    realtime: {
+      transport: ws
+    }
+  }
 );
 
 // Helper function to upload image to Supabase Storage
