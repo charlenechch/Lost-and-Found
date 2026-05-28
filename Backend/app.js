@@ -252,6 +252,6 @@ app.post("/items/:id/verify-claim", async (req, res) => {
     console.error("Error verifying claim:", error);
     res.status(500).json({ error: error.message });
   }
-});
+})
 
 module.exports = app;
