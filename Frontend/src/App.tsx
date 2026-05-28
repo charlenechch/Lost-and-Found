@@ -16,7 +16,7 @@ interface Item {
   image: string;
 }
 
-const API_URL = "http://localhost:5000";
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 const Icons = {
   Plus: () => (
@@ -125,7 +125,7 @@ function ClaimModal({ item, onConfirm, onClose }: ClaimModalProps) {
     setError("");
 
     try {
-      const response = await fetch(`${API_URL}items/${item.id}/verify-claim`, {
+      const response = await fetch(`${API_URL}/items/${item.id}/verify-claim`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ claimcode: code.trim().toUpperCase() })
@@ -159,17 +159,24 @@ function ClaimModal({ item, onConfirm, onClose }: ClaimModalProps) {
           <div style={{ padding: '1rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
             <div style={{ fontSize: '3rem' }}>✅</div>
             <h2 className="claim-title">Item Returned!</h2>
-            <p className="claim-instruction">The item has been marked as returned successfully.</p>
+            <p className="claim-subtitle">The item has been marked as returned successfully.</p>
           </div>
         ) : (
           <>
+            <div className="claim-icon-wrap">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#e53e3e" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0110 0v4"/>
+              </svg>
+            </div>
             <h2 className="claim-title">
-              {item.status === "lost" ? "Claim Lost Item" : "Claim Found Item"}
+              {item.status === "lost" ? "Mark as Found" : "Mark as Returned"}
             </h2>
-            <p className="claim-instruction">Enter the claim code to verify this item</p>
+            <p className="claim-subtitle">Enter your secret code to confirm this action</p>
+            <label className="claim-label">Secret Code</label>
             <input
               className="claim-input"
-              placeholder="Enter Secret Code"
+              placeholder="Enter your code (e.g., LF-4821)"
               value={code}
               onChange={(e) => setCode(e.target.value)}
               disabled={loading}
@@ -226,7 +233,17 @@ function ItemCard({ item, onMarkClaimed }: ItemCardProps) {
           <MetaRow iconType="cal">
             {new Date(item.created_at).toLocaleDateString()}
           </MetaRow>
-
+          {item.contact && (
+            <div className="contact-row">
+              <span className="contact-label">Contact:</span>
+              <a
+                className="contact-value"
+                href={item.contact.includes("@") ? `mailto:${item.contact}` : `tel:${item.contact}`}
+              >
+                {item.contact}
+              </a>
+            </div>
+          )}
           {(item.status === "lost" || item.status === "found") && (
             <button
               className={`btn-mark-claimed ${item.status}`}
@@ -272,7 +289,7 @@ export default function App() {
   const fetchItems = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${API_URL}items`);
+      const response = await fetch(`${API_URL}/items`);
       const data = await response.json();
       
       if (Array.isArray(data)) {
@@ -349,7 +366,7 @@ export default function App() {
           <span className="search-icon"><Icons.Search /></span>
           <input
             className="search-input"
-            placeholder="Search items..."
+            placeholder="Search items by name, description or location..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
