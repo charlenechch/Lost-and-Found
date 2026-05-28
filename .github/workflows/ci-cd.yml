@@ -5,6 +5,8 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  schedule:
+    - cron: '*/30 * * * *'  # Health check every 30 minutes
 
 jobs:
   # ─────────────────────────────────────────
@@ -32,20 +34,23 @@ jobs:
         run: npm ci
 
       - name: Run tests
-        run: npm test 
+        run: npm test
         env:
           NODE_ENV: test
-          # Add any test env vars here, e.g.:
-          # DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
-          # JWT_SECRET: ${{ secrets.JWT_SECRET }}
 
       - name: Build Docker image
         run: docker build -t lost-and-found-backend .
 
       - name: Deploy to Render
-        # Only deploy on push to main, not on PRs
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: curl -X POST ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          -H 'Content-type: application/json' \
+          --data '{"text":"❌ *Backend CI/CD Pipeline FAILED!*\nRepo: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}\nTriggered by: ${{ github.actor }}"}'
 
   # ─────────────────────────────────────────
   # JOB 2: Frontend — Build Check + Deploy
@@ -72,7 +77,7 @@ jobs:
         run: npm ci
 
       - name: Build check
-        run: npm run build 
+        run: npm run build
         env:
           CI: false
 
@@ -99,3 +104,36 @@ jobs:
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
           VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+      - name: Notify Slack on failure
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          -H 'Content-type: application/json' \
+          --data '{"text":"❌ *Frontend CI/CD Pipeline FAILED!*\nRepo: ${{ github.repository }}\nBranch: ${{ github.ref_name }}\nCommit: ${{ github.sha }}\nTriggered by: ${{ github.actor }}"}'
+
+  # ─────────────────────────────────────────
+  # JOB 3: Health Check — Every 30 Minutes
+  # ─────────────────────────────────────────
+  health-check:
+    name: Backend Health Check
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+
+    steps:
+      - name: Check backend is live
+        id: check
+        run: |
+          STATUS=$(curl -o /dev/null -s -w "%{http_code}" https://lost-and-found-backend.onrender.com)
+          echo "status=$STATUS" >> $GITHUB_OUTPUT
+          if [ "$STATUS" != "200" ]; then
+            echo "Backend is DOWN! Status: $STATUS"
+            exit 1
+          fi
+
+      - name: Notify Slack if backend is down
+        if: failure()
+        run: |
+          curl -X POST ${{ secrets.SLACK_WEBHOOK_URL }} \
+          -H 'Content-type: application/json' \
+          --data '{"text":"🚨 *Backend is DOWN!*\nHealth check failed.\nURL: https://lost-and-found-backend.onrender.com\nTime: ${{ github.run_started_at }}"}'
